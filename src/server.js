@@ -17,12 +17,25 @@ const dashboardRoutes = require('./routes/dashboard');
 const fileRoutes = require('./routes/files');
 const adminRoutes = require('./routes/admin');
 const profileRoutes = require('./routes/profile');
+const billingRoutes = require('./routes/billing');
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
 
-// Trust first proxy only (needed for correct req.ip / secure cookies behind a reverse proxy in prod).
-app.set('trust proxy', 1);
+// Trust proxy configuration: how many reverse-proxy hops (nginx, a load
+// balancer, etc.) sit in front of this app in the current deployment. This
+// must match reality exactly:
+//   - 0 (default): no reverse proxy - trust nothing from X-Forwarded-For,
+//     always use the raw socket address. This is the SAFE default for local
+//     dev and any deployment where the app is reached directly.
+//   - 1: exactly one reverse proxy in front, which itself sets/overwrites
+//     X-Forwarded-For (never passes through a client-supplied value
+//     unmodified). Only set this when that's actually true - setting it to
+//     1 without a real proxy in front lets any direct client spoof their
+//     apparent IP by simply sending their own X-Forwarded-For header, which
+//     would defeat the admin IP allowlist and pollute activity log IPs.
+// See src/utils/clientIp.js for where this setting is consumed.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || 0));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -98,6 +111,7 @@ app.use('/', profileRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/files', fileRoutes);
 app.use('/admin', adminRoutes);
+app.use('/billing', billingRoutes);
 
 // --- Error handling ---
 app.use((req, res) => {
@@ -109,6 +123,15 @@ app.use((err, req, res, next) => {
     return res.status(403).render('errors/403', { title: 'Request blocked', message: 'Invalid or missing security token. Please refresh and try again.' });
   }
   if (err.code === 'LIMIT_FILE_SIZE') {
+    if (req.path === '/settings/import') {
+      const user = req.session && req.session.userId
+        ? db.prepare('SELECT id, email, display_name, mfa_enabled, created_at, last_login_at, last_login_ip FROM users WHERE id = ?').get(req.session.userId)
+        : null;
+      return res.status(413).render('dashboard/settings', {
+        title: 'Settings', user, passwordError: null, passwordSuccess: false, activeNav: 'settings',
+        securityEvents: [], importError: 'That file is too large.', importSuccess: null,
+      });
+    }
     const folders = req.session && req.session.userId
       ? db.prepare('SELECT id, name FROM folders WHERE owner_id = ? ORDER BY name').all(req.session.userId)
       : [];
