@@ -1,0 +1,47 @@
+{
+  "name": "vaultshare",
+  "version": "1.0.0",
+  "description": "Secure document exchange platform for freelancers and clients",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "jest --runInBand --forceExit",
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "generate-key": "node scripts/generate-key.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "better-sqlite3": "^12.11.1",
+    "better-sqlite3-session-store": "^0.1.0",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^4.0.3",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^8.5.2",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.2.0",
+    "multer": "^2.2.0",
+    "qrcode": "^1.5.4",
+    "speakeasy": "^2.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 20000,
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/tmp/"
+    ]
+  }
+}
