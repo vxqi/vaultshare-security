@@ -1,0 +1,29 @@
+services:
+  vaultshare:
+    build: .
+    container_name: vaultshare
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Persist DB and uploaded (encrypted) files outside the container lifecycle.
+      - vaultshare-data:/app/data
+      - vaultshare-uploads:/app/uploads
+    restart: unless-stopped
+    # Defense in depth: read-only root filesystem except explicitly writable
+    # volumes/tmpfs paths. Prevents an attacker who gains code execution from
+    # persisting a webshell or modifying application code on disk.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  vaultshare-data:
+  vaultshare-uploads:
