@@ -1,0 +1,49 @@
+<h1>Admin IP allowlist</h1>
+<p class="muted" style="margin-bottom:20px">
+  When this list is empty, the admin panel is reachable from anywhere. Once you add an entry,
+  <strong>only</strong> the addresses listed here can reach <code>/admin/*</code>.
+  Your current address is <code><%= currentIp %></code>.
+</p>
+
+<% if (error) { %><div class="error-box" role="alert"><%= error %></div><% } %>
+
+<div class="card">
+  <form method="POST" action="/admin/ip-allowlist" style="display:flex; gap:10px; align-items:flex-end;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div style="flex:1">
+      <label for="ipAddress" style="margin-top:0">IP address</label>
+      <input type="text" id="ipAddress" name="ipAddress" placeholder="e.g. 203.0.113.42" value="<%= currentIp %>">
+    </div>
+    <div style="flex:1">
+      <label for="label" style="margin-top:0">Label (optional)</label>
+      <input type="text" id="label" name="label" placeholder="e.g. Office">
+    </div>
+    <button type="submit" style="margin-top:0">Add</button>
+  </form>
+</div>
+
+<div class="card">
+  <% if (!entries.length) { %>
+    <p class="muted">No restriction configured - admin panel is open to any authenticated admin.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>IP address</th><th>Label</th><th>Added by</th><th>Added</th><th></th></tr></thead>
+    <tbody>
+      <% entries.forEach(function(e) { %>
+      <tr>
+        <td class="mono"><%= e.ip_address %></td>
+        <td class="muted"><%= e.label || '—' %></td>
+        <td class="muted"><%= e.added_by_name || 'Unknown' %></td>
+        <td class="timestamp"><%= new Date(e.created_at + 'Z').toLocaleString() %></td>
+        <td class="actions">
+          <form action="/admin/ip-allowlist/<%= e.id %>/remove" method="POST" onsubmit="return confirm('Remove this IP from the allowlist?')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger-link">Remove</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
