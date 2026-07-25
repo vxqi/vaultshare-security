@@ -1,0 +1,41 @@
+<h1>Find people</h1>
+<p class="muted" style="margin-bottom:20px">Search by name or company. Results show their profile and any files they've made public.</p>
+
+<div class="card">
+  <form method="GET" action="/users/search" style="display:flex; gap:10px;">
+    <input type="text" name="q" placeholder="Search by name or company" value="<%= q %>" autofocus>
+    <button type="submit" class="secondary" style="margin-top:0">Search</button>
+  </form>
+</div>
+
+<% if (q) { %>
+<div class="card">
+  <% if (!results.length) { %>
+    <p class="muted">No matches for "<%= q %>".</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Person</th><th></th></tr></thead>
+    <tbody>
+      <% results.forEach(function(u) { %>
+      <tr>
+        <td>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <% if (u.avatar_uuid) { %>
+              <img src="/avatars/<%= u.avatar_uuid %>" alt="<%= u.display_name %>'s profile picture" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            <% } else { %>
+              <span class="avatar" style="background:<%= u.avatar_color %>; width:36px; height:36px; font-size:0.95rem;"><%= u.display_name.charAt(0).toUpperCase() %></span>
+            <% } %>
+            <div>
+              <div><%= u.display_name %></div>
+              <% if (u.company_name) { %><div class="muted" style="font-size:0.78rem"><%= u.company_name %></div><% } %>
+            </div>
+          </div>
+        </td>
+        <td class="actions"><a href="/users/<%= u.id %>/profile">View profile</a></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+<% } %>
