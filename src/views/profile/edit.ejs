@@ -1,0 +1,54 @@
+<h1>Your profile</h1>
+<p class="muted" style="margin-bottom:20px">Visible to anyone on VaultShare, along with any files you've marked public.</p>
+
+<% if (error) { %><div class="error-box" role="alert"><%= error %></div><% } %>
+<% if (saved) { %><div class="success-box" role="status">Profile updated.</div><% } %>
+
+<div class="card">
+  <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+    <% if (user.avatar_uuid) { %>
+      <img src="/avatars/<%= user.avatar_uuid %>" alt="Your profile picture" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+    <% } else { %>
+      <span class="avatar" style="background:<%= user.avatar_color %>"><%= user.display_name.charAt(0).toUpperCase() %></span>
+    <% } %>
+    <div>
+      <div style="font-weight:600"><%= user.display_name %></div>
+      <div class="muted" style="font-size:0.82rem"><%= user.email %></div>
+    </div>
+  </div>
+
+  <form method="POST" action="/profile/avatar" enctype="multipart/form-data" style="margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border);">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="avatar" style="margin-top:0">Profile picture</label>
+    <input type="file" id="avatar" name="avatar" accept="image/png,image/jpeg,image/webp">
+    <p class="muted" style="margin-top:4px; font-size:0.76rem">PNG, JPEG, or WebP. Max 3 MB.</p>
+    <button type="submit" class="secondary">Upload picture</button>
+  </form>
+
+  <form method="POST" action="/profile">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label for="bio">Bio</label>
+    <textarea id="bio" name="bio" maxlength="280" rows="3" placeholder="A short line about what you do"><%= user.bio || '' %></textarea>
+    <p class="muted" style="margin-top:4px; font-size:0.76rem">Max 280 characters.</p>
+
+    <label for="companyName">Company / studio</label>
+    <input type="text" id="companyName" name="companyName" maxlength="100" value="<%= user.company_name || '' %>">
+
+    <label for="website">Website</label>
+    <input type="text" id="website" name="website" placeholder="https://example.com" value="<%= user.website || '' %>">
+
+    <label id="avatarColorLabel">Avatar color <span class="muted" style="font-weight:400">(used if you haven't uploaded a picture)</span></label>
+    <div style="display:flex; gap:10px; margin-top:6px;" role="radiogroup" aria-labelledby="avatarColorLabel">
+      <% [['#C9A227','Gold'],['#4FB286','Green'],['#5B8DEF','Blue'],['#D14B4B','Red'],['#8B96A5','Gray'],['#B57EDC','Purple']].forEach(function(pair) { %>
+        <% var c = pair[0], colorName = pair[1]; %>
+        <label style="display:flex; align-items:center; gap:6px; margin:0; cursor:pointer;">
+          <input type="radio" name="avatarColor" value="<%= c %>" <%= user.avatar_color === c ? 'checked' : '' %> style="width:auto" aria-label="<%= colorName %>">
+          <span style="display:inline-block; width:22px; height:22px; border-radius:50%; background:<%= c %>;" aria-hidden="true"></span>
+        </label>
+      <% }) %>
+    </div>
+
+    <button type="submit">Save profile</button>
+  </form>
+</div>
