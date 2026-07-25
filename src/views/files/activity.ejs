@@ -1,0 +1,22 @@
+<h1>Activity for "<%= file.original_name %>"</h1>
+<p class="muted" style="margin-bottom:20px"><a href="/dashboard">&larr; Back to files</a></p>
+
+<div class="card">
+  <% if (!events.length) { %>
+    <p class="muted">No activity recorded yet.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Event</th><th>Person</th><th>IP address</th><th>When</th></tr></thead>
+    <tbody>
+      <% events.forEach(function(e) { %>
+      <tr>
+        <td><span class="badge"><%= e.action %></span></td>
+        <td class="muted"><%= e.display_name || 'Unknown' %></td>
+        <td class="mono muted"><%= e.ip_address || '—' %></td>
+        <td class="timestamp"><%= new Date(e.created_at + 'Z').toLocaleString() %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
