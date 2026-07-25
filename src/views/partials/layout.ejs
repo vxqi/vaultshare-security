@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> · VaultShare</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/dropdown.js" defer></script>
+</head>
+<body class="<%= typeof currentUser !== 'undefined' && currentUser ? '' : 'public-page' %>">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<% if (typeof currentUser !== 'undefined' && currentUser) { %>
+  <header class="topbar">
+    <a class="topbar-brand" href="/dashboard"><span class="seal-mini" aria-hidden="true"></span> VaultShare</a>
+    <div class="topbar-right">
+      <details class="profile-menu">
+        <summary class="profile-avatar-btn" aria-label="Account menu for <%= currentUser.displayName %>">
+          <% if (currentUser.avatarUuid) { %>
+            <img src="/avatars/<%= currentUser.avatarUuid %>" alt="" class="topbar-avatar-img">
+          <% } else { %>
+            <span class="avatar topbar-avatar" style="background:<%= currentUser.avatarColor %>"><%= currentUser.displayName.charAt(0).toUpperCase() %></span>
+          <% } %>
+        </summary>
+        <div class="profile-dropdown">
+          <div class="profile-dropdown-header">
+            <div class="name"><%= currentUser.displayName %></div>
+            <% if (currentUser.email) { %><div class="email"><%= currentUser.email %></div><% } %>
+          </div>
+          <a href="/profile">Profile</a>
+          <a href="/settings">Settings</a>
+          <a href="/billing">Billing</a>
+          <div class="dropdown-divider"></div>
+          <form action="/logout" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="dropdown-logout">Log out</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav aria-label="Main navigation">
+        <a href="/dashboard" class="<%= typeof activeNav !== 'undefined' && activeNav === 'dashboard' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'dashboard' ? 'aria-current="page"' : '' %>>Files</a>
+        <a href="/files/upload" class="<%= typeof activeNav !== 'undefined' && activeNav === 'upload' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'upload' ? 'aria-current="page"' : '' %>>Upload</a>
+        <a href="/dashboard/trash" class="<%= typeof activeNav !== 'undefined' && activeNav === 'trash' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'trash' ? 'aria-current="page"' : '' %>>Recycle bin</a>
+        <a href="/users/search" class="<%= typeof activeNav !== 'undefined' && activeNav === 'search' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'search' ? 'aria-current="page"' : '' %>>Find people</a>
+        <% if (currentUser.role === 'admin') { %>
+          <div class="navlabel">Admin</div>
+          <a href="/admin/users" class="<%= typeof activeNav !== 'undefined' && activeNav === 'admin-users' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'admin-users' ? 'aria-current="page"' : '' %>>Users</a>
+          <a href="/admin/activity" class="<%= typeof activeNav !== 'undefined' && activeNav === 'admin-activity' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'admin-activity' ? 'aria-current="page"' : '' %>>Activity log</a>
+          <a href="/admin/ip-allowlist" class="<%= typeof activeNav !== 'undefined' && activeNav === 'admin-ip' ? 'active' : '' %>" <%- typeof activeNav !== 'undefined' && activeNav === 'admin-ip' ? 'aria-current="page"' : '' %>>IP allowlist</a>
+        <% } %>
+      </nav>
+    </aside>
+    <main class="content" id="main-content" tabindex="-1">
+      <% if (typeof loginAlert !== 'undefined' && loginAlert) { %>
+        <div class="error-box" role="alert" style="margin-bottom:20px;">
+          <strong>Security notice:</strong>
+          <% if (loginAlert.failedSincePrevious > 0) { %>
+            <%= loginAlert.failedSincePrevious %> failed login attempt<%= loginAlert.failedSincePrevious === 1 ? '' : 's' %> occurred on your account since your last login.
+          <% } %>
+          <% if (loginAlert.ipChanged) { %>
+            You're logging in from a different address (<%= loginAlert.previousLoginIp %> &rarr; current) than last time.
+          <% } %>
+          If this wasn't you, change your password and enable two-factor authentication in Settings.
+        </div>
+      <% } %>
+      <%- body %>
+    </main>
+  </div>
+<% } else { %>
+  <header class="public-topbar">
+    <a class="brand" href="/"><span class="seal-mini" aria-hidden="true" style="width:16px;height:16px;display:inline-block;border-radius:50%;background:radial-gradient(circle at 35% 30%, #C9A227, #8A6F1E);"></span> VaultShare</a>
+    <nav aria-label="Main navigation">
+      <a href="/login" style="margin-right:18px;color:var(--muted)">Log in</a>
+      <a href="/register" class="btn" style="margin-top:0;padding:8px 16px;">Get started</a>
+    </nav>
+  </header>
+  <main class="content" id="main-content" tabindex="-1">
+    <%- body %>
+  </main>
+<% } %>
+</body>
+</html>
