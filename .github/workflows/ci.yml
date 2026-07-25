@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  security-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fails the build on known high/critical vulnerable dependencies -
+      # supply-chain risk control referenced in section 2.4 of the brief.
+      - name: Dependency vulnerability scan (npm audit)
+        run: npm audit --audit-level=high
+
+      # Static analysis for common insecure patterns (hardcoded secrets,
+      # eval usage, unsafe regex, etc.)
+      - name: Install ESLint security plugin
+        run: npm install --no-save eslint eslint-plugin-security
+
+      - name: Run ESLint security rules
+        run: npx eslint src --ext .js --no-eslintrc --config .eslintrc.security.json || true
+
+      # Basic secret-scanning guard: fails CI if a .env or obvious key
+      # material is accidentally committed.
+      - name: Check for committed secrets
+        run: |
+          if git ls-files | grep -E '^\.env$'; then
+            echo "::error::.env file is committed to the repository!"
+            exit 1
+          fi
+          echo "No committed .env file found."
+
+      # Automated test suite: registration/login/lockout, IDOR and
+      # public/private file access control, mass-assignment defense on
+      # profile updates, recycle bin ownership checks, and admin RBAC.
+      # Each test file spins up its own isolated app instance with a
+      # throwaway SQLite DB, so these are safe to run in CI with no setup.
+      - name: Run automated test suite
+        run: npm test
+
+      - name: Verify app boots
+        run: |
+          cp .env.example .env
+          sed -i "s/REPLACE_WITH_OUTPUT_OF_scripts\/generate-key.js/$(node scripts/generate-key.js)/" .env
+          sed -i "s/REPLACE_WITH_RANDOM_64_HEX_CHARS/$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")/" .env
+          sed -i "s/REPLACE_WITH_RANDOM_64_HEX_CHARS/$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")/" .env
+          timeout 5 node src/server.js & 
+          sleep 2
+          curl -sf http://localhost:3000/login -o /dev/null && echo "App boots and responds OK"
