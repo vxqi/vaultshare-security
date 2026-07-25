@@ -1,0 +1,68 @@
+<h1>Recycle bin</h1>
+<p class="muted" style="margin-bottom:20px">Items here can be restored, or permanently deleted. Nothing is purged automatically.</p>
+
+<div class="card">
+  <h2 style="font-size:1.05rem; margin-bottom:8px;">Folders</h2>
+  <% if (!folders.length) { %>
+    <p class="muted">No deleted folders.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Name</th><th>Deleted</th><th></th></tr></thead>
+    <tbody>
+      <% folders.forEach(function(f) { %>
+      <tr>
+        <td><%= f.name %></td>
+        <td class="timestamp"><%= new Date(f.deleted_at + 'Z').toLocaleString() %></td>
+        <td class="actions">
+          <form action="/files/folders/<%= f.id %>/restore" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn">Restore</button>
+          </form>
+          <form action="/files/folders/<%= f.id %>/purge" method="POST" class="inline-form" onsubmit="return confirm('Permanently delete this folder? This cannot be undone.')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger-link">Delete forever</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1.05rem; margin-bottom:8px;">Files</h2>
+  <% if (!files.length) { %>
+    <p class="muted">No deleted files.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>File</th><th>Deleted</th><th></th></tr></thead>
+    <tbody>
+      <% files.forEach(function(f) { %>
+      <tr>
+        <td>
+          <div class="file-row">
+            <span class="seal seal-view" title="In recycle bin">●</span>
+            <div class="file-meta">
+              <div class="file-name"><%= f.original_name %></div>
+              <div class="file-sub"><%= (f.size_bytes/1024).toFixed(1) %> KB</div>
+            </div>
+          </div>
+        </td>
+        <td class="timestamp"><%= new Date(f.deleted_at + 'Z').toLocaleString() %></td>
+        <td class="actions">
+          <form action="/files/<%= f.uuid %>/restore" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn">Restore</button>
+          </form>
+          <form action="/files/<%= f.uuid %>/purge" method="POST" class="inline-form" onsubmit="return confirm('Permanently delete this file? This cannot be undone.')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger-link">Delete forever</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
