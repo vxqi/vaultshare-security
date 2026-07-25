@@ -1,0 +1,61 @@
+<h1>Share "<%= file.original_name %>"</h1>
+<p class="muted" style="margin-bottom:20px"><a href="/dashboard">&larr; Back to files</a></p>
+
+<div class="card">
+  <h2 style="font-size:1.05rem">Visibility</h2>
+  <p class="muted" style="margin:6px 0 14px">
+    Currently: <span class="badge <%= file.is_public ? '' : 'disabled' %>"><%= file.is_public ? 'Public' : 'Private' %></span>
+    <% if (file.is_public) { %> — anyone on VaultShare can view and download this file via your profile.
+    <% } else { %> — only you and people you explicitly share it with can access this file.<% } %>
+  </p>
+  <form action="/files/<%= file.uuid %>/visibility" method="POST" onsubmit="return confirm('<%= file.is_public ? "Make this file private again?" : "Make this file public? Anyone on VaultShare will be able to view and download it." %>')">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="secondary"><%= file.is_public ? 'Make private' : 'Make public' %></button>
+  </form>
+</div>
+
+<div class="card">
+  <% if (typeof error !== 'undefined' && error) { %><div class="error-box" role="alert"><%= error %></div><% } %>
+  <form method="POST" action="/files/<%= file.uuid %>/share">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="email">Share with (email)</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="permission">Permission</label>
+    <select id="permission" name="permission">
+      <option value="view">View only</option>
+      <option value="edit">View & download (edit)</option>
+    </select>
+
+    <label for="expiresInDays">Expires after (days, optional)</label>
+    <input type="number" id="expiresInDays" name="expiresInDays" min="1" max="365" placeholder="Never">
+
+    <button type="submit">Share</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1.05rem">Currently shared with</h2>
+  <% if (!existing.length) { %>
+    <p class="muted">Not shared with anyone yet.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Person</th><th>Permission</th><th>Expires</th><th></th></tr></thead>
+    <tbody>
+      <% existing.forEach(function(s) { %>
+      <tr>
+        <td><a href="/users/<%= s.user_id %>/profile" style="color:inherit"><%= s.display_name %></a> <span class="muted">(<%= s.email %>)</span></td>
+        <td><span class="badge"><%= s.permission %></span></td>
+        <td class="muted"><%= s.expires_at ? new Date(s.expires_at).toLocaleDateString() : 'Never' %></td>
+        <td>
+          <form action="/files/<%= file.uuid %>/share/<%= s.id %>/revoke" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn" style="color:var(--danger)">Revoke</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
