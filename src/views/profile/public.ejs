@@ -1,0 +1,50 @@
+<p class="muted" style="margin-bottom:20px"><a href="/dashboard">&larr; Back to files</a></p>
+
+<div class="card">
+  <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
+    <% if (profileUser.avatar_uuid) { %>
+      <img src="/avatars/<%= profileUser.avatar_uuid %>" alt="<%= profileUser.display_name %>'s profile picture" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+    <% } else { %>
+      <span class="avatar" style="background:<%= profileUser.avatar_color %>"><%= profileUser.display_name.charAt(0).toUpperCase() %></span>
+    <% } %>
+    <div>
+      <h1 style="margin:0"><%= profileUser.display_name %></h1>
+      <% if (profileUser.company_name) { %><div class="muted"><%= profileUser.company_name %></div><% } %>
+    </div>
+  </div>
+
+  <% if (profileUser.bio) { %><p><%= profileUser.bio %></p><% } %>
+  <% if (profileUser.website) { %>
+    <p><a href="<%= profileUser.website %>" target="_blank" rel="noopener noreferrer nofollow"><%= profileUser.website %></a></p>
+  <% } %>
+
+  <p class="muted" style="font-size:0.8rem; margin-top:16px;">On VaultShare since <%= new Date(profileUser.created_at + 'Z').toLocaleDateString() %></p>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1.05rem; margin-bottom:8px;">Public files</h2>
+  <% if (!publicFiles.length) { %>
+    <p class="muted">This person hasn't made any files public.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>File</th><th>Shared</th><th></th></tr></thead>
+    <tbody>
+      <% publicFiles.forEach(function(f) { %>
+      <tr>
+        <td>
+          <div class="file-row">
+            <span class="seal seal-view" title="Public file">●</span>
+            <div class="file-meta">
+              <div class="file-name"><%= f.original_name %></div>
+              <div class="file-sub"><%= (f.size_bytes/1024).toFixed(1) %> KB · <%= f.mime_type %></div>
+            </div>
+          </div>
+        </td>
+        <td class="timestamp"><%= new Date(f.created_at + 'Z').toLocaleDateString() %></td>
+        <td class="actions"><a href="/files/<%= f.uuid %>/download">Download</a></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
