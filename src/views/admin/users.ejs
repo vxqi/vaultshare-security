@@ -1,0 +1,51 @@
+<h1>User management</h1>
+
+<div class="card">
+  <form method="GET" action="/admin/users" style="display:flex; gap:10px;">
+    <input type="text" name="q" placeholder="Search by name or email" value="<%= search %>" style="flex:1">
+    <button type="submit" class="secondary" style="margin-top:0">Search</button>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>User</th><th>Role</th><th>Status</th><th>MFA</th><th>Joined</th><th></th></tr></thead>
+    <tbody>
+      <% users.forEach(function(u) { %>
+      <tr>
+        <td>
+          <div><%= u.display_name %></div>
+          <div class="muted mono" style="font-size:0.76rem"><%= u.email %></div>
+        </td>
+        <td><span class="badge <%= u.role === 'admin' ? 'admin' : '' %>"><%= u.role %></span></td>
+        <td>
+          <% if (u.locked_until && new Date(u.locked_until) > new Date()) { %>
+            <span class="badge disabled">Locked</span>
+          <% } else if (!u.is_active) { %>
+            <span class="badge disabled">Disabled</span>
+          <% } else { %>
+            <span class="badge">Active</span>
+          <% } %>
+        </td>
+        <td class="muted"><%= u.mfa_enabled ? 'On' : 'Off' %></td>
+        <td class="timestamp"><%= new Date(u.created_at + 'Z').toLocaleDateString() %></td>
+        <td class="actions">
+          <% if (u.id !== currentUser.id) { %>
+          <form action="/admin/users/<%= u.id %>/toggle-active" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn <%= u.is_active ? 'danger-link' : '' %>"><%= u.is_active ? 'Disable' : 'Enable' %></button>
+          </form>
+          <form action="/admin/users/<%= u.id %>/role" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="role" value="<%= u.role === 'admin' ? 'user' : 'admin' %>">
+            <button type="submit" class="link-btn"><%= u.role === 'admin' ? 'Revoke admin' : 'Make admin' %></button>
+          </form>
+          <% } else { %>
+            <span class="muted" style="font-size:0.8rem">(you)</span>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
