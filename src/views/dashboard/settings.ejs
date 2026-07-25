@@ -1,0 +1,82 @@
+<h1>Settings</h1>
+
+<div class="card">
+  <h2 style="font-size:1rem">Account</h2>
+  <p class="muted" style="margin-top:6px">
+    <%= user.display_name %> · <%= user.email %><br>
+    Member since <%= new Date(user.created_at + 'Z').toLocaleDateString() %>
+  </p>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Security overview</h2>
+  <p class="muted" style="margin:6px 0 14px">
+    <% if (user.last_login_at) { %>
+      Last login: <%= new Date(user.last_login_at + 'Z').toLocaleString() %>
+      <% if (user.last_login_ip) { %>from <span class="mono"><%= user.last_login_ip %></span><% } %>
+    <% } else { %>
+      This is your first recorded login.
+    <% } %>
+  </p>
+  <% if (typeof securityEvents !== 'undefined' && securityEvents.length) { %>
+  <table>
+    <thead><tr><th>Event</th><th>IP</th><th>When</th></tr></thead>
+    <tbody>
+      <% securityEvents.forEach(function(e) { %>
+      <tr>
+        <td><span class="badge"><%= e.action %></span></td>
+        <td class="mono muted"><%= e.ip_address || '—' %></td>
+        <td class="timestamp"><%= new Date(e.created_at + 'Z').toLocaleString() %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Two-factor authentication</h2>
+  <p class="muted" style="margin:6px 0 14px">
+    Status: <span class="badge <%= user.mfa_enabled ? '' : 'disabled' %>"><%= user.mfa_enabled ? 'Enabled' : 'Disabled' %></span>
+  </p>
+  <% if (!user.mfa_enabled) { %>
+    <a href="/settings/mfa/setup" class="btn" style="display:inline-block">Set up two-factor authentication</a>
+  <% } else { %>
+    <form action="/settings/mfa/disable" method="POST" onsubmit="return confirm('Disable two-factor authentication?')">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="secondary">Disable two-factor authentication</button>
+    </form>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Change password</h2>
+  <% if (passwordError) { %><div class="error-box" role="alert"><%= passwordError %></div><% } %>
+  <% if (passwordSuccess) { %><div class="success-box" role="status"><%= "Password updated." %></div><% } %>
+  <form action="/settings/password" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="currentPassword">Current password</label>
+    <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
+    <label for="newPassword">New password</label>
+    <input type="password" id="newPassword" name="newPassword" required minlength="12" autocomplete="new-password">
+    <label for="confirmNewPassword">Confirm new password</label>
+    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required minlength="12" autocomplete="new-password">
+    <button type="submit">Update password</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Your data</h2>
+  <p class="muted" style="margin:6px 0 14px">Download a copy of your account info, folders, file list, and recent activity as JSON. File contents are never included - only metadata.</p>
+  <a href="/settings/export" class="btn secondary" style="display:inline-block; margin-bottom:20px;">Export my data</a>
+
+  <% if (typeof importError !== 'undefined' && importError) { %><div class="error-box" role="alert"><%= importError %></div><% } %>
+  <% if (typeof importSuccess !== 'undefined' && importSuccess) { %><div class="success-box" role="status"><%= importSuccess %></div><% } %>
+  <form action="/settings/import" method="POST" enctype="multipart/form-data" style="border-top:1px solid var(--border); padding-top:16px;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="importFile">Import a VaultShare export file</label>
+    <input type="file" id="importFile" name="importFile" accept="application/json,.json">
+    <p class="muted" style="margin-top:4px; font-size:0.76rem">Restores your bio, company, and website, and recreates folder names. Does not restore file contents.</p>
+    <button type="submit" class="secondary">Import</button>
+  </form>
+</div>
