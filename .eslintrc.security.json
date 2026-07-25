@@ -1,0 +1,6 @@
+{
+  "env": { "node": true, "es2022": true },
+  "parserOptions": { "ecmaVersion": 2022, "sourceType": "script" },
+  "plugins": ["security"],
+  "extends": ["plugin:security/recommended-legacy"]
+}
