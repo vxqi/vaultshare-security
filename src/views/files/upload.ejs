@@ -1,0 +1,27 @@
+<h1>Upload a file</h1>
+<div class="card">
+  <% if (error) { %><div class="error-box" role="alert"><%= error %></div><% } %>
+  <form method="POST" action="/files/upload" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="file">Choose file (max 25 MB)</label>
+    <input type="file" id="file" name="file" required>
+
+    <% if (folders && folders.length) { %>
+    <label for="folderId">Folder (optional)</label>
+    <select id="folderId" name="folderId">
+      <option value="">No folder</option>
+      <% folders.forEach(function(f) { %>
+        <option value="<%= f.id %>" <%= String(selectedFolder) === String(f.id) ? 'selected' : '' %>><%= f.name %></option>
+      <% }) %>
+    </select>
+    <% } %>
+
+    <label style="display:flex; align-items:center; gap:8px; margin-top:18px; cursor:pointer;">
+      <input type="checkbox" name="isPublic" style="width:auto; margin:0;">
+      <span style="font-size:0.88rem; color:var(--text);">Make this file public (visible to anyone on VaultShare via your profile)</span>
+    </label>
+
+    <button type="submit">Upload &amp; encrypt</button>
+  </form>
+  <p class="muted" style="margin-top:16px">Accepted: PDF, Word, Excel, images, plain text/CSV. Files are encrypted with AES-256-GCM before being written to disk. You can change visibility later from the Share page.</p>
+</div>
