@@ -95,15 +95,4 @@ scripts/         One-off ops scripts (key generation)
 - IP-based rate limiting on login, registration, and downloads
 - Docker: non-root user, read-only root filesystem, dropped capabilities
 
-## What's not yet built
 
-This is a foundation, not the finished coursework submission. Still needed:
-- Admin role/panel (currently `role` supports `admin` in the schema but no
-  admin UI exists yet)
-- Activity log viewer / audit UI
-- Automated tests (unit + integration)
-- Formal internal penetration test write-up (this app is the *target*, not
-  the test itself — testing happens separately per your coursework brief)
-- CI currently runs `npm audit`, a security-focused ESLint pass, a secret
-  scan, and a smoke boot test — extend with real unit/integration tests once
-  written
