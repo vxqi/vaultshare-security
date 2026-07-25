@@ -1,0 +1,114 @@
+<% if (breadcrumbs.length) { %>
+<div class="breadcrumbs">
+  <a href="/dashboard">Files</a>
+  <% breadcrumbs.forEach(function(b, i) { %>
+    <span class="sep">/</span>
+    <% if (i === breadcrumbs.length - 1) { %><span><%= b.name %></span>
+    <% } else { %><a href="/dashboard?folder=<%= b.id %>"><%= b.name %></a><% } %>
+  <% }) %>
+</div>
+<% } %>
+
+<div class="section-header">
+  <h1><%= currentFolder ? currentFolder.name : 'Your files' %></h1>
+  <div style="display:flex; gap:10px;">
+    <% if (currentFolder) { %>
+    <form action="/files/folders/<%= currentFolder.id %>/delete" method="POST" onsubmit="return confirm('Move this folder and everything in it to the recycle bin?')">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="secondary" style="margin-top:0; padding:8px 16px;">Delete folder</button>
+    </form>
+    <% } %>
+    <a href="/files/upload<%= currentFolder ? '?folder=' + currentFolder.id : '' %>" class="btn" style="margin-top:0; padding:8px 16px;">Upload file</a>
+  </div>
+</div>
+
+<% if (query.uploaded) { %><div class="success-box">File uploaded and encrypted.</div><% } %>
+<% if (query.deleted) { %><div class="success-box">Moved to recycle bin.</div><% } %>
+
+<% if (subfolders.length) { %>
+<div class="folder-grid">
+  <% subfolders.forEach(function(f) { %>
+    <a class="folder-chip" href="/dashboard?folder=<%= f.id %>">📁 <%= f.name %></a>
+  <% }) %>
+</div>
+<% } %>
+
+<div class="card">
+  <% if (!owned.length) { %>
+    <div class="empty-state">
+      <h2>Nothing here yet</h2>
+      <p class="muted">Upload a file to get started, or create a folder to organize your vault.</p>
+    </div>
+  <% } else { %>
+  <table>
+    <thead><tr><th>File</th><th>Visibility</th><th>Uploaded</th><th></th></tr></thead>
+    <tbody>
+      <% owned.forEach(function(f) { %>
+      <tr>
+        <td>
+          <div class="file-row">
+            <span class="seal seal-owner" title="You own this file">●</span>
+            <div class="file-meta">
+              <div class="file-name"><%= f.original_name %></div>
+              <div class="file-sub"><%= (f.size_bytes/1024).toFixed(1) %> KB · <%= f.mime_type %></div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge <%= f.is_public ? '' : 'disabled' %>"><%= f.is_public ? 'Public' : 'Private' %></span></td>
+        <td class="timestamp"><%= new Date(f.created_at + 'Z').toLocaleDateString() %></td>
+        <td class="actions">
+          <a href="/files/<%= f.uuid %>/download">Download</a>
+          <a href="/files/<%= f.uuid %>/share">Share</a>
+          <a href="/files/<%= f.uuid %>/activity">Activity</a>
+          <form action="/files/<%= f.uuid %>/delete" method="POST" class="inline-form" onsubmit="return confirm('Move this file to the recycle bin?')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger-link">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<div class="card">
+  <form action="/files/folders" method="POST" style="display:flex; gap:10px; align-items:flex-end;">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (currentFolder) { %><input type="hidden" name="parentId" value="<%= currentFolder.id %>"><% } %>
+    <div style="flex:1">
+      <label for="folderName" style="margin-top:0">New folder</label>
+      <input type="text" id="folderName" name="name" placeholder="e.g. Client contracts" maxlength="100" required>
+    </div>
+    <button type="submit" class="secondary" style="margin-top:0">Create</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1.05rem; margin-bottom:8px;">Shared with you</h2>
+  <% if (!sharedWithMe.length) { %>
+    <p class="muted">Nothing has been shared with you yet.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>File</th><th>Owner</th><th>Access</th><th></th></tr></thead>
+    <tbody>
+      <% sharedWithMe.forEach(function(f) { %>
+      <tr>
+        <td>
+          <div class="file-row">
+            <span class="seal seal-<%= f.permission %>" title="Access: <%= f.permission %>">●</span>
+            <div class="file-meta">
+              <div class="file-name"><%= f.original_name %></div>
+              <div class="file-sub"><%= (f.size_bytes/1024).toFixed(1) %> KB</div>
+            </div>
+          </div>
+        </td>
+        <td class="muted"><a href="/users/<%= f.owner_id %>/profile" style="color:inherit"><%= f.owner_name %></a></td>
+        <td><span class="badge"><%= f.permission %></span></td>
+        <td class="actions"><a href="/files/<%= f.uuid %>/download">Download</a></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
