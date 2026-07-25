@@ -1,0 +1,51 @@
+<h1>Billing</h1>
+
+<% if (typeof query !== 'undefined' && query && query.upgraded) { %><div class="success-box" role="status">Upgraded to Pro.</div><% } %>
+<% if (typeof query !== 'undefined' && query && query.downgraded) { %><div class="success-box" role="status">Downgraded to Free.</div><% } %>
+<% if (error) { %><div class="error-box" role="alert"><%= error %></div><% } %>
+
+<div class="card">
+  <h2 style="font-size:1.05rem">Current plan: <span class="badge <%= user.plan === 'pro' ? 'admin' : '' %>"><%= user.plan === 'pro' ? 'Pro' : 'Free' %></span></h2>
+  <p class="muted" style="margin:10px 0 4px">
+    Using <%= usageMb.toFixed(1) %> MB of <%= user.storage_limit_mb %> MB
+  </p>
+  <div style="background:var(--panel-2); border-radius:6px; height:8px; overflow:hidden; margin:8px 0 16px;">
+    <div style="height:100%; background:var(--brass); width:<%= Math.min(100, (usageMb / user.storage_limit_mb) * 100).toFixed(1) %>%;"></div>
+  </div>
+
+  <% if (user.plan === 'free') { %>
+    <p class="muted">Upgrade to Pro for <%= plans.pro.storageLimitMb %> MB of storage — $<%= (plans.pro.priceCents / 100).toFixed(2) %>.</p>
+    <form action="/billing/upgrade" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit">Upgrade to Pro</button>
+    </form>
+  <% } else { %>
+    <p class="muted">You're on the Pro plan. Downgrading requires your usage to be under the Free plan's <%= plans.free.storageLimitMb %> MB limit.</p>
+    <form action="/billing/downgrade" method="POST" onsubmit="return confirm('Downgrade to the Free plan?')">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="secondary">Downgrade to Free</button>
+    </form>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1.05rem; margin-bottom:8px;">Transaction history</h2>
+  <% if (!transactions.length) { %>
+    <p class="muted">No transactions yet.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Description</th><th>Date</th></tr></thead>
+    <tbody>
+      <% transactions.forEach(function(t) { %>
+      <tr>
+        <td><span class="badge"><%= t.type %></span></td>
+        <td class="mono">$<%= (t.amount_cents / 100).toFixed(2) %> <%= t.currency %></td>
+        <td class="muted"><%= t.status %></td>
+        <td class="muted"><%= t.description %></td>
+        <td class="timestamp"><%= new Date(t.created_at + 'Z').toLocaleString() %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
