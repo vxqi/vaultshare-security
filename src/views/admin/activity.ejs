@@ -1,0 +1,45 @@
+<h1>System activity log</h1>
+
+<div class="card">
+  <form method="GET" action="/admin/activity" style="display:flex; gap:10px; align-items:flex-end;">
+    <div style="flex:1">
+      <label for="action" style="margin-top:0">Filter by action</label>
+      <select id="action" name="action">
+        <option value="">All actions</option>
+        <% distinctActions.forEach(function(a) { %>
+          <option value="<%= a %>" <%= actionFilter === a ? 'selected' : '' %>><%= a %></option>
+        <% }) %>
+      </select>
+    </div>
+    <button type="submit" class="secondary" style="margin-top:0">Filter</button>
+  </form>
+</div>
+
+<div class="card">
+  <% if (!events.length) { %>
+    <p class="muted">No matching events.</p>
+  <% } else { %>
+  <table>
+    <thead><tr><th>Action</th><th>User</th><th>Target</th><th>IP</th><th>When</th></tr></thead>
+    <tbody>
+      <% events.forEach(function(e) { %>
+      <tr>
+        <td><span class="badge"><%= e.action %></span></td>
+        <td class="muted"><%= e.display_name || 'system' %></td>
+        <td class="mono muted"><%= e.target_type ? (e.target_type + ' #' + e.target_id) : '—' %></td>
+        <td class="mono muted"><%= e.ip_address || '—' %></td>
+        <td class="timestamp"><%= new Date(e.created_at + 'Z').toLocaleString() %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+
+  <% if (totalPages > 1) { %>
+  <div style="display:flex; gap:14px; margin-top:18px; font-size:0.85rem;">
+    <% if (page > 1) { %><a href="/admin/activity?page=<%= page-1 %>&action=<%= actionFilter %>">&larr; Newer</a><% } %>
+    <span class="muted">Page <%= page %> of <%= totalPages %></span>
+    <% if (page < totalPages) { %><a href="/admin/activity?page=<%= page+1 %>&action=<%= actionFilter %>">Older &rarr;</a><% } %>
+  </div>
+  <% } %>
+</div>
