@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const db = require('../db');
 const cryptoUtil = require('../utils/crypto');
 const activityLog = require('../utils/activityLog');
+const { matchesDeclaredType } = require('../utils/fileSignature');
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
@@ -191,6 +192,27 @@ async function uploadFile(req, res) {
     return res.status(400).render('files/upload', { title: 'Upload file', error: 'File type not allowed.', activeNav: 'upload', folders: db.prepare('SELECT id, name FROM folders WHERE owner_id = ? AND deleted_at IS NULL ORDER BY name').all(req.session.userId), selectedFolder: '' });
   }
 
+  // Read the file once here (reused as plainBuf for the rest of this function).
+  const plainBuf = fs.readFileSync(req.file.path);
+  fs.unlink(req.file.path, () => {}); // remove multer's temp plaintext copy immediately
+
+  // Verify the declared Content-Type against actual file content. Closes the
+  // MIME-spoofing gap identified in pentesting: the allow-list above only
+  // checks the client-declared header, which is trivially forgeable.
+  if (!matchesDeclaredType(plainBuf, req.file.mimetype)) {
+    activityLog.log({
+      userId: req.session.userId, action: 'file_upload_rejected_signature_mismatch', req,
+      metadata: { declaredType: req.file.mimetype, originalName: req.file.originalname },
+    });
+    return res.status(400).render('files/upload', {
+      title: 'Upload file',
+      error: 'This file\'s content does not match its declared type and was rejected.',
+      activeNav: 'upload',
+      folders: db.prepare('SELECT id, name FROM folders WHERE owner_id = ? AND deleted_at IS NULL ORDER BY name').all(req.session.userId),
+      selectedFolder: '',
+    });
+  }
+
   // Storage plan enforcement - checked against the user's current plan limit
   // before any encryption/disk work happens, so a rejected upload never
   // leaves a partial file behind.
@@ -200,8 +222,7 @@ async function uploadFile(req, res) {
   ).get(req.session.userId).total;
   const limitBytes = account.storage_limit_mb * 1024 * 1024;
 
-  if (usageBytes + req.file.size > limitBytes) {
-    fs.unlink(req.file.path, () => {});
+  if (usageBytes + plainBuf.length > limitBytes) {
     return res.status(400).render('files/upload', {
       title: 'Upload file',
       error: `This would exceed your ${account.storage_limit_mb} MB storage limit (${account.plan} plan). Delete some files or upgrade your plan.`,
@@ -216,9 +237,6 @@ async function uploadFile(req, res) {
     const folder = db.prepare('SELECT id FROM folders WHERE id = ? AND owner_id = ? AND deleted_at IS NULL').get(Number(req.body.folderId), req.session.userId);
     if (folder) targetFolderId = folder.id;
   }
-
-  const plainBuf = fs.readFileSync(req.file.path);
-  fs.unlink(req.file.path, () => {}); // remove multer's temp plaintext copy immediately
 
   const dek = cryptoUtil.generateFileKey();
   const { ciphertext, iv } = cryptoUtil.encryptBuffer(plainBuf, dek);

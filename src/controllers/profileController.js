@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const db = require('../db');
 const activityLog = require('../utils/activityLog');
+const { matchesDeclaredType } = require('../utils/fileSignature');
 
 const AVATAR_COLORS = ['#C9A227', '#4FB286', '#5B8DEF', '#D14B4B', '#8B96A5', '#B57EDC'];
 const BIO_MAX = 280;
@@ -15,8 +16,8 @@ fs.mkdirSync(AVATAR_DIR, { recursive: true });
 // profiles), so unlike documents they are stored unencrypted - there is no
 // confidentiality requirement for a profile picture. They still go through
 // the same discipline as document uploads though: strict MIME allow-list,
-// random on-disk filename (never the original filename or any user input),
-// and a size cap.
+// magic-byte signature verification, random on-disk filename (never the
+// original filename or any user input), and a size cap.
 const ALLOWED_AVATAR_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
 const MIME_TO_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
@@ -96,11 +97,32 @@ async function uploadAvatar(req, res) {
     });
   }
 
+  // Read the temp upload once here (reused below for both the signature
+  // check and the write to AVATAR_DIR).
+  const fileBuf = fs.readFileSync(req.file.path);
+  fs.unlink(req.file.path, () => {});
+
+  // Verify the declared Content-Type against actual file content. Closes the
+  // same MIME-spoofing gap identified in pentesting for document uploads -
+  // the allow-list above only checks the client-declared header, which is
+  // trivially forgeable.
+  if (!matchesDeclaredType(fileBuf, req.file.mimetype)) {
+    activityLog.log({
+      userId: req.session.userId, action: 'avatar_upload_rejected_signature_mismatch', req,
+      metadata: { declaredType: req.file.mimetype, originalName: req.file.originalname },
+    });
+    const user = db.prepare(
+      'SELECT id, email, display_name, bio, company_name, website, avatar_color, avatar_uuid, created_at FROM users WHERE id = ?'
+    ).get(req.session.userId);
+    return res.status(400).render('profile/edit', {
+      title: 'Your profile', user, error: 'This file\'s content does not match its declared type and was rejected.', saved: false, activeNav: 'profile',
+    });
+  }
+
   const ext = MIME_TO_EXT[req.file.mimetype];
   const avatarUuid = crypto.randomUUID();
   const destPath = path.join(AVATAR_DIR, `${avatarUuid}.${ext}`);
-  fs.copyFileSync(req.file.path, destPath);
-  fs.unlink(req.file.path, () => {});
+  fs.writeFileSync(destPath, fileBuf);
 
   const previous = db.prepare('SELECT avatar_uuid, avatar_mime FROM users WHERE id = ?').get(req.session.userId);
 
