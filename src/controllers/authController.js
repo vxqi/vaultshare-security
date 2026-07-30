@@ -12,6 +12,8 @@ const LOCKOUT_MINUTES = 15;
 
 // Argon2id: current OWASP-recommended password hashing algorithm, resistant
 // to both GPU cracking (memory-hard) and side-channel timing attacks.
+// Exported so oauthController can hash the random placeholder password it
+// gives OAuth-created accounts using the exact same parameters.
 const ARGON2_OPTIONS = {
   type: argon2.argon2id,
   memoryCost: 19456, // 19 MiB, OWASP minimum recommendation
@@ -19,6 +21,9 @@ const ARGON2_OPTIONS = {
   parallelism: 1,
 };
 
+// Exported so oauthController can look up an existing account by email when
+// deciding whether a Google sign-in should create a new account or link to
+// an existing password-based one.
 function getUserByEmail(email) {
   return db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase().trim());
 }
@@ -61,6 +66,23 @@ function recordLoginAndBuildAlert(req, user, action) {
 
   db.prepare('UPDATE users SET last_login_at = datetime(\'now\'), last_login_ip = ?, last_login_activity_id = ? WHERE id = ?')
     .run(currentIp, info.lastInsertRowid, user.id);
+}
+
+// Shared session-establishment step for every "fully authenticated" path in
+// the app: password login (no MFA), MFA-completed login, and OAuth login
+// (no MFA). Pulling this into one function means every login path gets the
+// same session-fixation protection (regenerate() before setting userId) and
+// the same activity logging, rather than each path having to remember to
+// implement it correctly on its own.
+function establishSession(req, res, user, action) {
+  req.session.regenerate((err) => {
+    if (err) return res.status(500).render('errors/500', { title: 'Error' });
+    req.session.userId = user.id;
+    req.session.role = user.role;
+    req.session.displayName = user.display_name;
+    recordLoginAndBuildAlert(req, user, action);
+    res.redirect('/dashboard');
+  });
 }
 
 // --- Registration ---
@@ -118,8 +140,24 @@ async function register(req, res) {
 }
 
 // --- Login (step 1: password) ---
+
+// Friendly, non-leaky messages for OAuth failures that bounce back to this
+// page via ?oauth_error=<code>. Kept as a lookup table rather than passing
+// raw provider error text through to the client.
+const OAUTH_ERROR_MESSAGES = {
+  denied: 'Google sign-in was cancelled.',
+  state_mismatch: 'Your sign-in attempt could not be verified. Please try again.',
+  expired: 'Your sign-in attempt took too long. Please try again.',
+  unverified_email: 'That Google account\'s email address is not verified with Google. Please verify it first, or sign in with a password instead.',
+  locked: 'Account temporarily locked due to failed attempts. Try again later.',
+  disabled: 'Account disabled. Contact support.',
+  conflict: 'Unable to sign in with Google for this account. Try signing in with your password instead.',
+  failed: 'Google sign-in failed. Please try again, or use your password.',
+};
+
 async function showLogin(req, res) {
-  res.render('auth/login', { title: 'Log in', error: null, registered: req.query.registered === '1' });
+  const oauthError = OAUTH_ERROR_MESSAGES[req.query.oauth_error] || null;
+  res.render('auth/login', { title: 'Log in', error: oauthError, registered: req.query.registered === '1' });
 }
 
 async function login(req, res) {
@@ -176,14 +214,7 @@ async function login(req, res) {
     return res.redirect('/login/mfa');
   }
 
-  req.session.regenerate((err) => {
-    if (err) return res.status(500).render('errors/500', { title: 'Error' });
-    req.session.userId = user.id;
-    req.session.role = user.role;
-    req.session.displayName = user.display_name;
-    recordLoginAndBuildAlert(req, user, 'login_success');
-    res.redirect('/dashboard');
-  });
+  establishSession(req, res, user, 'login_success');
 }
 
 // --- MFA verification (step 2) ---
@@ -212,14 +243,7 @@ async function verifyMfaLogin(req, res) {
   }
 
   delete req.session.pendingMfaUserId;
-  req.session.regenerate((err) => {
-    if (err) return res.status(500).render('errors/500', { title: 'Error' });
-    req.session.userId = user.id;
-    req.session.role = user.role;
-    req.session.displayName = user.display_name;
-    recordLoginAndBuildAlert(req, user, 'login_success_mfa');
-    res.redirect('/dashboard');
-  });
+  establishSession(req, res, user, 'login_success_mfa');
 }
 
 // --- MFA enrollment (from account settings, requires already logged in) ---
@@ -286,7 +310,7 @@ async function showSettings(req, res) {
   // pushed out asynchronously.
   const securityEvents = db.prepare(`
     SELECT action, ip_address, created_at FROM activity_log
-    WHERE user_id = ? AND action IN ('login_success','login_success_mfa','login_fail','login_blocked_locked','password_changed','mfa_enabled','mfa_disabled')
+    WHERE user_id = ? AND action IN ('login_success','login_success_mfa','login_success_oauth','login_fail','login_blocked_locked','password_changed','mfa_enabled','mfa_disabled')
     ORDER BY created_at DESC LIMIT 10
   `).all(req.session.userId);
 
@@ -479,4 +503,6 @@ module.exports = {
   startMfaSetup, confirmMfaSetup, disableMfa,
   logout,
   showSettings, changePassword, exportData, importData,
+  // Exported for reuse by oauthController.js
+  getUserByEmail, recordLoginAndBuildAlert, establishSession, ARGON2_OPTIONS,
 };
