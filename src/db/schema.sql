@@ -34,8 +34,10 @@ CREATE TABLE IF NOT EXISTS users (
     last_login_ip   TEXT,
     last_login_activity_id INTEGER,
     -- OAuth identity (currently: Google only). NULL/NULL = password-only
-    -- account. The partial unique index below guarantees a given provider
-    -- identity can only ever be linked to one VaultShare account.
+    -- account. The partial unique index guaranteeing a given provider
+    -- identity maps to only one account is created in migrations.js, since
+    -- it must run after the ALTER TABLE that adds these columns to any
+    -- database that predates OAuth support.
     oauth_provider  TEXT,
     oauth_id        TEXT
 );
@@ -138,12 +140,6 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_shares_file_user ON shares(file_id, user_id) WHERE file_id IS NOT NULL;
-
--- Guarantees a given provider identity (e.g. a specific Google account) can
--- only ever be linked to one VaultShare user row. Partial index (WHERE
--- oauth_provider IS NOT NULL) so password-only accounts, which all have
--- NULL/NULL here, never collide with each other under a UNIQUE constraint.
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_oauth ON users(oauth_provider, oauth_id) WHERE oauth_provider IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_files_owner ON files(owner_id);
 CREATE INDEX IF NOT EXISTS idx_shares_user ON shares(user_id);
