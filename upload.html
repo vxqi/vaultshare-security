@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload file · VaultShare</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/dropdown.js" defer></script>
+</head>
+<body class="">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="topbar">
+    <a class="topbar-brand" href="/dashboard"><span class="seal-mini" aria-hidden="true"></span> VaultShare</a>
+    <div class="topbar-right">
+      <details class="profile-menu">
+        <summary class="profile-avatar-btn" aria-label="Account menu for binnol dahal">
+          
+            <img src="/avatars/a16a56c5-239b-4b98-9b97-772566c09183" alt="" class="topbar-avatar-img">
+          
+        </summary>
+        <div class="profile-dropdown">
+          <div class="profile-dropdown-header">
+            <div class="name">binnol dahal</div>
+            <div class="email">binnol@gmail.com</div>
+          </div>
+          <a href="/profile">Profile</a>
+          <a href="/settings">Settings</a>
+          <a href="/billing">Billing</a>
+          <div class="dropdown-divider"></div>
+          <form action="/logout" method="POST">
+            <input type="hidden" name="_csrf" value="4695ef2ebc5c81dfa99f20fddf4ee6cd977c832bd5ce7fb38d278771c23ee4fa.2c9d4fbba11cb26cadfc7becebed1d9eebdb787e1fafc6e4288d8b7e4332c20f">
+            <button type="submit" class="dropdown-logout">Log out</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav aria-label="Main navigation">
+        <a href="/dashboard" class="" >Files</a>
+        <a href="/files/upload" class="active" aria-current="page">Upload</a>
+        <a href="/dashboard/trash" class="" >Recycle bin</a>
+        <a href="/users/search" class="" >Find people</a>
+        
+          <div class="navlabel">Admin</div>
+          <a href="/admin/users" class="" >Users</a>
+          <a href="/admin/activity" class="" >Activity log</a>
+          <a href="/admin/ip-allowlist" class="" >IP allowlist</a>
+        
+      </nav>
+    </aside>
+    <main class="content" id="main-content" tabindex="-1">
+      
+      <h1>Upload a file</h1>
+<div class="card">
+  
+  <form method="POST" action="/files/upload" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="4695ef2ebc5c81dfa99f20fddf4ee6cd977c832bd5ce7fb38d278771c23ee4fa.2c9d4fbba11cb26cadfc7becebed1d9eebdb787e1fafc6e4288d8b7e4332c20f">
+    <label for="file">Choose file (max 25 MB)</label>
+    <input type="file" id="file" name="file" required>
+
+    
+
+    <label style="display:flex; align-items:center; gap:8px; margin-top:18px; cursor:pointer;">
+      <input type="checkbox" name="isPublic" style="width:auto; margin:0;">
+      <span style="font-size:0.88rem; color:var(--text);">Make this file public (visible to anyone on VaultShare via your profile)</span>
+    </label>
+
+    <button type="submit">Upload &amp; encrypt</button>
+  </form>
+  <p class="muted" style="margin-top:16px">Accepted: PDF, Word, Excel, images, plain text/CSV. Files are encrypted with AES-256-GCM before being written to disk. You can change visibility later from the Share page.</p>
+</div>
+    </main>
+  </div>
+
+</body>
+</html>

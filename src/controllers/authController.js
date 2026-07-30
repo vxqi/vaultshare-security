@@ -7,7 +7,7 @@ const { checkPasswordStrength } = require('../utils/passwordPolicy');
 const activityLog = require('../utils/activityLog');
 const { getClientIp } = require('../utils/clientIp');
 
-const MAX_FAILED_ATTEMPTS = 5;
+const MAX_FAILED_ATTEMPTS = 15;
 const LOCKOUT_MINUTES = 15;
 
 // Argon2id: current OWASP-recommended password hashing algorithm, resistant

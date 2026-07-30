@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two-factor verification · VaultShare</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/dropdown.js" defer></script>
+</head>
+<body class="public-page">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="public-topbar">
+    <a class="brand" href="/"><span class="seal-mini" aria-hidden="true" style="width:16px;height:16px;display:inline-block;border-radius:50%;background:radial-gradient(circle at 35% 30%, #C9A227, #8A6F1E);"></span> VaultShare</a>
+    <nav aria-label="Main navigation">
+      <a href="/login" style="margin-right:18px;color:var(--muted)">Log in</a>
+      <a href="/register" class="btn" style="margin-top:0;padding:8px 16px;">Get started</a>
+    </nav>
+  </header>
+  <main class="content" id="main-content" tabindex="-1">
+    <div class="card">
+  <h1>Two-factor verification</h1>
+  <p class="muted">Enter the 6-digit code from your authenticator app.</p>
+  
+  <form method="POST" action="/login/mfa">
+    <input type="hidden" name="_csrf" value="c4936d04f23b83b5ab0e9caf7faf984c8d8ee8a4ac2b6cc08fad768220389bc4.2a560b4db8021aeb6cef7351770b5127e4e1b24be551a7bad59ca951cdca0ad6">
+    <label for="token">Authentication code</label>
+    <input type="text" id="token" name="token" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus autocomplete="one-time-code">
+    <button type="submit">Verify</button>
+  </form>
+</div>
+  </main>
+
+</body>
+</html>

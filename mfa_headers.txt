@@ -1,0 +1,27 @@
+HTTP/1.1 302 Found
+Content-Security-Policy: default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data:;object-src 'none';frame-ancestors 'none';base-uri 'self';form-action 'self';font-src 'self' https: data:;script-src-attr 'none';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+RateLimit-Policy: 10;w=900
+RateLimit-Limit: 10
+RateLimit-Remaining: 7
+RateLimit-Reset: 571
+Set-Cookie: vs.csrf=c4936d04f23b83b5ab0e9caf7faf984c8d8ee8a4ac2b6cc08fad768220389bc4.2a560b4db8021aeb6cef7351770b5127e4e1b24be551a7bad59ca951cdca0ad6; Path=/; HttpOnly; SameSite=Strict
+Set-Cookie: vs.sid=s%3A6ILTgtXmzz-UC0oWSUlsWneNTDyR7i_V.9bATCKG8q9t0ZdDKMs27TzXvjaZlMOg92cgODgR8AQc; Path=/; Expires=Thu, 30 Jul 2026 07:52:18 GMT; HttpOnly; SameSite=Lax
+Location: /dashboard
+Vary: Accept
+Content-Type: text/plain; charset=utf-8
+Content-Length: 32
+Date: Thu, 30 Jul 2026 07:22:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
