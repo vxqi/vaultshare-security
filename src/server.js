@@ -77,7 +77,21 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: isProd,          // HTTPS-only cookie in production
-    sameSite: 'strict',      // strong CSRF baseline defense; double-submit CSRF is the primary layer
+    // 'lax', not 'strict': Strict cookies are withheld on ANY cross-site
+    // request, including a top-level browser redirect - which is exactly
+    // what happens when Google redirects the browser back to
+    // /auth/google/callback after login. With Strict, that callback request
+    // arrives with no session cookie at all, so the state value stored in
+    // step 1 is unreachable and every OAuth login fails as "state_mismatch"
+    // even on a completely legitimate attempt. Lax still blocks the cookie
+    // on cross-site state-changing requests (POST etc.), so the CSRF
+    // posture is effectively unchanged - state-changing routes remain
+    // covered by the double-submit CSRF middleware regardless of this
+    // setting, and the OAuth callback has its own independent CSRF/replay
+    // defense via the state+PKCE check. Strict vs Lax here was never really
+    // part of that defense-in-depth story; it was an unrelated setting that
+    // happened to collide with any redirect-based third-party login flow.
+    sameSite: 'lax',
     maxAge: 30 * 60 * 1000,  // 30 min idle timeout
   },
 }));
