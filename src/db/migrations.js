@@ -63,6 +63,24 @@ function runMigrations(db) {
     db.exec(`ALTER TABLE users ADD COLUMN last_login_activity_id INTEGER`);
   }
 
+  // --- OAuth login (Google) ---
+  // Nullable columns are safe to add via plain ALTER TABLE. password_hash
+  // deliberately stays NOT NULL and untouched here - OAuth accounts get a
+  // random placeholder hash at creation time instead (see
+  // oauthController.js), which avoids ever needing to rebuild the users
+  // table to drop a NOT NULL constraint (something SQLite's ALTER TABLE
+  // cannot do directly).
+  if (!columnExists(db, 'users', 'oauth_provider')) {
+    db.exec(`ALTER TABLE users ADD COLUMN oauth_provider TEXT`);
+  }
+  if (!columnExists(db, 'users', 'oauth_id')) {
+    db.exec(`ALTER TABLE users ADD COLUMN oauth_id TEXT`);
+  }
+  // Partial unique index - safe to re-run, and safe to create even on a
+  // table that already has rows, since all existing rows have
+  // oauth_provider IS NULL and are therefore excluded from the index.
+  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS uq_users_oauth ON users(oauth_provider, oauth_id) WHERE oauth_provider IS NOT NULL`);
+
   // --- New tables (safe to re-run; CREATE TABLE IF NOT EXISTS) ---
   db.exec(`
     CREATE TABLE IF NOT EXISTS ip_allowlist (

@@ -7,6 +7,11 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS users (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     email           TEXT NOT NULL UNIQUE,
+    -- Never actually NULL, even for OAuth-created accounts: those accounts
+    -- get a random, never-disclosed placeholder hash (generated in
+    -- oauthController.js) rather than a real password. This keeps this
+    -- column's NOT NULL constraint - and every existing password-login code
+    -- path - completely unchanged by adding OAuth as a second login method.
     password_hash   TEXT NOT NULL,
     role            TEXT NOT NULL CHECK(role IN ('user','admin')) DEFAULT 'user',
     display_name    TEXT NOT NULL,
@@ -27,7 +32,12 @@ CREATE TABLE IF NOT EXISTS users (
     storage_limit_mb INTEGER NOT NULL DEFAULT 500,
     last_login_at   TEXT,
     last_login_ip   TEXT,
-    last_login_activity_id INTEGER
+    last_login_activity_id INTEGER,
+    -- OAuth identity (currently: Google only). NULL/NULL = password-only
+    -- account. The partial unique index below guarantees a given provider
+    -- identity can only ever be linked to one VaultShare account.
+    oauth_provider  TEXT,
+    oauth_id        TEXT
 );
 
 -- Password history to prevent reuse
@@ -128,6 +138,12 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_shares_file_user ON shares(file_id, user_id) WHERE file_id IS NOT NULL;
+
+-- Guarantees a given provider identity (e.g. a specific Google account) can
+-- only ever be linked to one VaultShare user row. Partial index (WHERE
+-- oauth_provider IS NOT NULL) so password-only accounts, which all have
+-- NULL/NULL here, never collide with each other under a UNIQUE constraint.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_users_oauth ON users(oauth_provider, oauth_id) WHERE oauth_provider IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_files_owner ON files(owner_id);
 CREATE INDEX IF NOT EXISTS idx_shares_user ON shares(user_id);
