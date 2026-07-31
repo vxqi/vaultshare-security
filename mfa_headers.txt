@@ -13,15 +13,15 @@ X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 0
 RateLimit-Policy: 10;w=900
 RateLimit-Limit: 10
-RateLimit-Remaining: 7
-RateLimit-Reset: 571
-Set-Cookie: vs.csrf=c4936d04f23b83b5ab0e9caf7faf984c8d8ee8a4ac2b6cc08fad768220389bc4.2a560b4db8021aeb6cef7351770b5127e4e1b24be551a7bad59ca951cdca0ad6; Path=/; HttpOnly; SameSite=Strict
-Set-Cookie: vs.sid=s%3A6ILTgtXmzz-UC0oWSUlsWneNTDyR7i_V.9bATCKG8q9t0ZdDKMs27TzXvjaZlMOg92cgODgR8AQc; Path=/; Expires=Thu, 30 Jul 2026 07:52:18 GMT; HttpOnly; SameSite=Lax
+RateLimit-Remaining: 8
+RateLimit-Reset: 769
+Set-Cookie: vs.csrf=eca3bb613b3e2b7c23603b2679b7d6b2903af8210afc7aceb7f560b6e60b9bd7.6e704ac8a073392e686875cbe38e97246a20fe88cdbeec4a0100230b35b742cb; Path=/; HttpOnly; SameSite=Strict
+Set-Cookie: vs.sid=s%3AOXIG3j5m9Z92QrjLgMnMbmJtKtt_m7ek.vf8lnZM8b4AkFLH3l%2B94Rma6uX9SFkitgsZBG2hymMI; Path=/; Expires=Fri, 31 Jul 2026 08:47:55 GMT; HttpOnly; SameSite=Lax
 Location: /dashboard
 Vary: Accept
 Content-Type: text/plain; charset=utf-8
 Content-Length: 32
-Date: Thu, 30 Jul 2026 07:22:18 GMT
+Date: Fri, 31 Jul 2026 08:17:55 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 

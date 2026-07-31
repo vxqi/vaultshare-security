@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings · VaultShare</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/dropdown.js" defer></script>
+</head>
+<body class="">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="topbar">
+    <a class="topbar-brand" href="/dashboard"><span class="seal-mini" aria-hidden="true"></span> VaultShare</a>
+    <div class="topbar-right">
+      <details class="profile-menu">
+        <summary class="profile-avatar-btn" aria-label="Account menu for binnol dahal">
+          
+            <img src="/avatars/30d9275a-39d6-4fd4-a589-3315a775237b" alt="" class="topbar-avatar-img">
+          
+        </summary>
+        <div class="profile-dropdown">
+          <div class="profile-dropdown-header">
+            <div class="name">binnol dahal</div>
+            <div class="email">binnol@gmail.com</div>
+          </div>
+          <a href="/profile">Profile</a>
+          <a href="/settings">Settings</a>
+          <a href="/billing">Billing</a>
+          <div class="dropdown-divider"></div>
+          <form action="/logout" method="POST">
+            <input type="hidden" name="_csrf" value="5d78486ba2a0ed2aa205ee442ed7258c4df328b943bae7a6cb8bb46614bfebb0.524e4b5542047399c0488b483b89f1945e8f8d90c59e35d3f38d41bdcf2ff363">
+            <button type="submit" class="dropdown-logout">Log out</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav aria-label="Main navigation">
+        <a href="/dashboard" class="" >Files</a>
+        <a href="/files/upload" class="" >Upload</a>
+        <a href="/dashboard/trash" class="" >Recycle bin</a>
+        <a href="/users/search" class="" >Find people</a>
+        
+          <div class="navlabel">Admin</div>
+          <a href="/admin/users" class="" >Users</a>
+          <a href="/admin/activity" class="" >Activity log</a>
+          <a href="/admin/ip-allowlist" class="" >IP allowlist</a>
+        
+      </nav>
+    </aside>
+    <main class="content" id="main-content" tabindex="-1">
+      
+      <h1>Settings</h1>
+
+<div class="card">
+  <h2 style="font-size:1rem">Account</h2>
+  <p class="muted" style="margin-top:6px">
+    binnol dahal · binnol@gmail.com<br>
+    Member since 7/12/2026
+  </p>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Security overview</h2>
+  <p class="muted" style="margin:6px 0 14px">
+    
+      This is your first recorded login.
+    
+  </p>
+  
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Two-factor authentication</h2>
+  <p class="muted" style="margin:6px 0 14px">
+    Status: <span class="badge ">Enabled</span>
+  </p>
+  
+    <form action="/settings/mfa/disable" method="POST" onsubmit="return confirm('Disable two-factor authentication?')">
+      <input type="hidden" name="_csrf" value="5d78486ba2a0ed2aa205ee442ed7258c4df328b943bae7a6cb8bb46614bfebb0.524e4b5542047399c0488b483b89f1945e8f8d90c59e35d3f38d41bdcf2ff363">
+      <button type="submit" class="secondary">Disable two-factor authentication</button>
+    </form>
+  
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Change password</h2>
+  
+  
+  <form action="/settings/password" method="POST">
+    <input type="hidden" name="_csrf" value="5d78486ba2a0ed2aa205ee442ed7258c4df328b943bae7a6cb8bb46614bfebb0.524e4b5542047399c0488b483b89f1945e8f8d90c59e35d3f38d41bdcf2ff363">
+    <label for="currentPassword">Current password</label>
+    <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
+    <label for="newPassword">New password</label>
+    <input type="password" id="newPassword" name="newPassword" required minlength="12" autocomplete="new-password">
+    <label for="confirmNewPassword">Confirm new password</label>
+    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required minlength="12" autocomplete="new-password">
+    <button type="submit">Update password</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="font-size:1rem">Your data</h2>
+  <p class="muted" style="margin:6px 0 14px">Download a copy of your account info, folders, file list, and recent activity as JSON. File contents are never included - only metadata.</p>
+  <a href="/settings/export" class="btn secondary" style="display:inline-block; margin-bottom:20px;">Export my data</a>
+
+  <div class="error-box" role="alert">That file is not valid JSON.</div>
+  
+  <form action="/settings/import" method="POST" enctype="multipart/form-data" style="border-top:1px solid var(--border); padding-top:16px;">
+    <input type="hidden" name="_csrf" value="5d78486ba2a0ed2aa205ee442ed7258c4df328b943bae7a6cb8bb46614bfebb0.524e4b5542047399c0488b483b89f1945e8f8d90c59e35d3f38d41bdcf2ff363">
+    <label for="importFile">Import a VaultShare export file</label>
+    <input type="file" id="importFile" name="importFile" accept="application/json,.json">
+    <p class="muted" style="margin-top:4px; font-size:0.76rem">Restores your bio, company, and website, and recreates folder names. Does not restore file contents.</p>
+    <button type="submit" class="secondary">Import</button>
+  </form>
+</div>
+    </main>
+  </div>
+
+</body>
+</html>

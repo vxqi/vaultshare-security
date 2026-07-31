@@ -1,4 +1,4 @@
-HTTP/1.1 302 Found
+HTTP/1.1 200 OK
 Content-Security-Policy: default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data:;object-src 'none';frame-ancestors 'none';base-uri 'self';form-action 'self';font-src 'self' https: data:;script-src-attr 'none';upgrade-insecure-requests
 Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Resource-Policy: same-origin
@@ -11,17 +11,16 @@ X-Download-Options: noopen
 X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 0
-RateLimit-Policy: 10;w=900
-RateLimit-Limit: 10
-RateLimit-Remaining: 8
-RateLimit-Reset: 866
-Set-Cookie: vs.csrf=eca3bb613b3e2b7c23603b2679b7d6b2903af8210afc7aceb7f560b6e60b9bd7.6e704ac8a073392e686875cbe38e97246a20fe88cdbeec4a0100230b35b742cb; Path=/; HttpOnly; SameSite=Strict
-Set-Cookie: vs.sid=s%3AHYg4AsVUSx5l3o6IpnKS26cu5cQkvgMf.uJJHQoD3s5DafLkBvDOeHns0KId4Tk47PnQ5fIuhpJw; Path=/; Expires=Fri, 31 Jul 2026 08:46:18 GMT; HttpOnly; SameSite=Lax
-Location: /login/mfa
-Vary: Accept
-Content-Type: text/plain; charset=utf-8
-Content-Length: 32
-Date: Fri, 31 Jul 2026 08:16:18 GMT
+RateLimit-Policy: 120;w=60
+RateLimit-Limit: 120
+RateLimit-Remaining: 119
+RateLimit-Reset: 60
+Set-Cookie: vs.csrf=5d78486ba2a0ed2aa205ee442ed7258c4df328b943bae7a6cb8bb46614bfebb0.524e4b5542047399c0488b483b89f1945e8f8d90c59e35d3f38d41bdcf2ff363; Path=/; HttpOnly; SameSite=Strict
+Set-Cookie: vs.sid=s%3AOXIG3j5m9Z92QrjLgMnMbmJtKtt_m7ek.vf8lnZM8b4AkFLH3l%2B94Rma6uX9SFkitgsZBG2hymMI; Path=/; Expires=Fri, 31 Jul 2026 08:49:31 GMT; HttpOnly; SameSite=Lax
+Content-Type: text/html; charset=utf-8
+Content-Length: 5380
+ETag: W/"1504-72x+xz9IobOO+cTwFIq2BLFwyyQ"
+Date: Fri, 31 Jul 2026 08:19:31 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
